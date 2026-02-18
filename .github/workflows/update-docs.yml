@@ -9,9 +9,14 @@ on:
         default: 'docs/'
         type: string
       mode:
-        description: 'Update mode: smart (uses doctrace) or legacy (brute-force)'
+        description: 'Update mode: smart (uses doctrace), legacy (brute-force), or custom'
         required: false
         default: 'smart'
+        type: string
+      custom_skill:
+        description: 'Path to custom skill file in caller repo (used when mode=custom)'
+        required: false
+        default: '.claude/commands/update-docs.md'
         type: string
       auto_merge_days:
         description: 'Auto-merge PR after N days (0 to disable)'
@@ -49,17 +54,26 @@ jobs:
 
       - name: Download scripts
         run: |
-          mkdir -p /tmp/doc-updater
+          mkdir -p /tmp/doc-updater/skills
           curl -sL https://raw.githubusercontent.com/lucasvtiradentes/doc-updater/main/.github/scripts/run-claude.sh -o /tmp/doc-updater/run-claude.sh
           curl -sL https://raw.githubusercontent.com/lucasvtiradentes/doc-updater/main/.github/scripts/update-docs.sh -o /tmp/doc-updater/update-docs.sh
           chmod +x /tmp/doc-updater/*.sh
 
-      - name: Download skill
+      - name: Setup skill
         run: |
-          mkdir -p /tmp/doc-updater/skills
-          if [ "${{ inputs.mode }}" = "smart" ]; then
+          if [ "${{ inputs.mode }}" = "custom" ]; then
+            if [ -f "${{ inputs.custom_skill }}" ]; then
+              echo "Using custom skill from: ${{ inputs.custom_skill }}"
+              cp "${{ inputs.custom_skill }}" /tmp/doc-updater/skills/update-docs.md
+            else
+              echo "ERROR: Custom skill not found at ${{ inputs.custom_skill }}"
+              exit 1
+            fi
+          elif [ "${{ inputs.mode }}" = "smart" ]; then
+            echo "Downloading smart skill..."
             curl -sL https://raw.githubusercontent.com/lucasvtiradentes/doc-updater/main/skills/update-docs-smart.md -o /tmp/doc-updater/skills/update-docs.md
           else
+            echo "Downloading legacy skill..."
             curl -sL https://raw.githubusercontent.com/lucasvtiradentes/doc-updater/main/skills/update-docs-legacy.md -o /tmp/doc-updater/skills/update-docs.md
           fi
 
