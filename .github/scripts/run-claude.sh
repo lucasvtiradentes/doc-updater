@@ -21,6 +21,10 @@ CURRENT_TOOL=""
 process_json() {
   local line="$1"
 
+  if ! echo "$line" | jq -e . >/dev/null 2>&1; then
+    return 0
+  fi
+
   local type
   type=$(echo "$line" | jq -r '.type // empty' 2>/dev/null) || return
 
