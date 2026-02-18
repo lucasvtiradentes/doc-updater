@@ -222,10 +222,13 @@ while IFS= read -r line; do
     echo -e "${RED}[parse] invalid json (line $total): ${line:0:80}...${RESET}" >&2
     continue
   fi
-  if [[ $(echo "$line" | jq -r '.type // empty') == "result" ]]; then
+  line_type=$(echo "$line" | jq -r '.type // empty')
+  if [[ "$line_type" == "result" ]]; then
     has_result=1
   fi
-  process_json "$line" || true
+  if ! process_json "$line"; then
+    echo -e "${RED}[error] process_json failed on line $total (type=$line_type, len=${#line})${RESET}" >&2
+  fi
 done < <(claude --print --verbose --dangerously-skip-permissions --model "$MODEL" \
   --output-format stream-json --include-partial-messages "$@"; echo "EXIT:$?")
 
