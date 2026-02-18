@@ -92,11 +92,11 @@ process_json() {
         has_file=$(echo "$line" | jq -r 'if .tool_use_result | type == "object" then .tool_use_result.file // empty else empty end' 2>/dev/null)
         if [[ -n "$has_file" && "$has_file" != "null" ]]; then
           local preview num_lines
-          num_lines=$(echo "$line" | jq -r '.tool_use_result.file.numLines')
+          num_lines=$(echo "$line" | jq -r '.tool_use_result.file.numLines // 0')
           preview=$(echo "$line" | jq -r --argjson n "$FILE_LINES" '.tool_use_result.file.content | split("\n") | .[0:$n] | map("'"$INDENT"'" + .) | join("\n")')
           echo -e "${DIM}${INDENT}(${num_lines} lines)"
           echo -e "${preview}"
-          [[ $num_lines -gt $FILE_LINES ]] && echo -e "${INDENT}..."
+          [[ "${num_lines:-0}" =~ ^[0-9]+$ && $num_lines -gt $FILE_LINES ]] && echo -e "${INDENT}..."
           echo -e "${RESET}"
         else
           content=$(echo "$line" | jq -r '.message.content[0].content // "no content"')
