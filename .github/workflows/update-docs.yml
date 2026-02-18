@@ -77,3 +77,12 @@ jobs:
           path: .doctrace/syncs/
           if-no-files-found: ignore
           retention-days: 30
+
+      - name: Upload Claude session
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-session
+          path: ~/.claude/projects/
+          if-no-files-found: ignore
+          retention-days: 7
