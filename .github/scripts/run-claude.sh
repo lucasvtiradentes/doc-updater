@@ -166,7 +166,7 @@ process_json() {
       if echo "$line" | jq -e '.message.content[]? | select(.type == "tool_use" and .name == "Bash")' &>/dev/null; then
         local command
         command=$(echo "$line" | jq -r '.message.content[] | select(.type == "tool_use" and .name == "Bash") | .input.command')
-        echo -e "\n${PURPLE}[Bash] ${command}${RESET}"
+        echo -e "\n${PURPLE}[Bash] ${command//$'\n'/ }${RESET}"
       fi
       # Handle Task
       if echo "$line" | jq -e '.message.content[]? | select(.type == "tool_use" and .name == "Task")' &>/dev/null; then
