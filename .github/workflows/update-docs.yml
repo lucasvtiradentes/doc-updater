@@ -92,3 +92,12 @@ jobs:
           AUTO_MERGE_DAYS: ${{ inputs.auto_merge_days }}
           SCRIPT_DIR: ${{ env.WORK_DIR }}
         run: ${{ env.WORK_DIR }}/update-docs.sh
+
+      - name: Upload sync report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: doc-sync-report
+          path: .doctrace/syncs/
+          if-no-files-found: ignore
+          retention-days: 30
