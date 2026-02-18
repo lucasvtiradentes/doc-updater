@@ -1,0 +1,73 @@
+name: Update Docs
+
+on:
+  workflow_call:
+    inputs:
+      docs_path:
+        description: 'Path to docs directory'
+        required: false
+        default: 'docs/'
+        type: string
+      mode:
+        description: 'Update mode: smart (uses doctrace) or legacy (brute-force)'
+        required: false
+        default: 'smart'
+        type: string
+      auto_merge_days:
+        description: 'Auto-merge PR after N days (0 to disable)'
+        required: false
+        default: 3
+        type: number
+      git_ref:
+        description: 'Git ref for smart mode (tag, branch, commit, or --since-lock)'
+        required: false
+        default: '--since-lock'
+        type: string
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN:
+        required: true
+
+jobs:
+  update-docs:
+    name: Update documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Download scripts
+        run: |
+          mkdir -p .github/scripts
+          curl -sL https://raw.githubusercontent.com/lucasvtiradentes/doc-updater/main/.github/scripts/run-claude.sh -o .github/scripts/run-claude.sh
+          curl -sL https://raw.githubusercontent.com/lucasvtiradentes/doc-updater/main/.github/scripts/update-docs.sh -o .github/scripts/update-docs.sh
+          chmod +x .github/scripts/*.sh
+
+      - name: Download skill
+        run: |
+          mkdir -p .claude/commands
+          if [ "${{ inputs.mode }}" = "smart" ]; then
+            curl -sL https://raw.githubusercontent.com/lucasvtiradentes/doc-updater/main/skills/update-docs-smart.md -o .claude/commands/update-docs.md
+          else
+            curl -sL https://raw.githubusercontent.com/lucasvtiradentes/doc-updater/main/skills/update-docs-legacy.md -o .claude/commands/update-docs.md
+          fi
+
+      - name: Update docs
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCS_PATH: ${{ inputs.docs_path }}
+          GIT_REF: ${{ inputs.git_ref }}
+          AUTO_MERGE_DAYS: ${{ inputs.auto_merge_days }}
+        run: .github/scripts/update-docs.sh
