@@ -42,6 +42,7 @@ jobs:
         run: |
           npm install -g @anthropic-ai/claude-code
           pipx install doctrace
+          pipx install doc-align
           pipx install claude-code-pretty
 
       - name: Download scripts

@@ -10,6 +10,8 @@ PR_NUMBER=""
 setup_git() {
   git config user.name "github-actions[bot]"
   git config user.email "github-actions[bot]@users.noreply.github.com"
+  mkdir -p .git/info
+  echo ".doctrace/" >> .git/info/exclude
 }
 
 install_skill() {
@@ -113,7 +115,7 @@ No changes needed - docs are up to date."
 }
 
 get_pr_title() {
-  local pr_title_file=".doctrace/pr-title.txt"
+  local pr_title_file=".doctrace/pr-title.md"
   if [[ -f "$pr_title_file" ]]; then
     cat "$pr_title_file"
   else

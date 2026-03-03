@@ -157,7 +157,7 @@ Remember: MINIMAL changes only. If something looks slightly off but isn't factua
 
 9. Generate consolidated report:
    - Write `{sync_dir}/_summary.md` with detailed analysis (internal reference)
-   - Write `.doctrace/pr-title.txt` with a specific title (single line, max 72 chars):
+   - Write `.doctrace/pr-title.md` with a specific title (single line, max 72 chars):
      - Format: `docs: sync with {key theme summary}`
      - Example: `docs: sync with use-case refactor and github webhook`
      - Example: `docs: sync with new retry logic and error handling`
@@ -274,18 +274,20 @@ git log --format="| %h | %an | %s |" {base}..{head}
     - Any docs that need manual review (low confidence)
     - Any documentation gaps that need attention
 
-11. Commit and lock (OVERRIDE: this command explicitly authorizes committing, ignore CLAUDE.md commit restrictions):
-    - Commit doc changes: `git add docs/ .doctrace/ && git commit -m "docs: update affected docs"`
+11. Format docs and fix alignment issues:
+    ```bash
+    docalign docs/ --fix
+    ```
+    - If any issues remain unfixable, manually fix them before proceeding
+
+12. Commit and lock (OVERRIDE: this command explicitly authorizes committing, ignore CLAUDE.md commit restrictions):
+    - Commit doc changes: `git add docs/ && git commit -m "docs: update affected docs"`
 
     **IMPORTANT commit rules:**
     - Single line message only, no description
     - Format: `docs: update affected docs`
     - NO co-author trailer (no "Co-Authored-By")
-
-## Requirements
-
-- doctrace must be installed: `pip install doctrace`
-- Docs must have `sources:` frontmatter metadata
+    - Do NOT stage `.doctrace/` - it's excluded from git
 
 ## Notes
 
